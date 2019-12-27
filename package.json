@@ -1,11 +1,14 @@
 {
   "name": "elm-license-finder",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": {
   	"name": "Wofgang Schuster",
   	"email": "wolfadex@gmail.com"
   },
   "description": "Gathers all the licenses for your Elm dependencies",
   "main": "index.js",
+  "bin": {
+  	"elm-license-finder": "./index.js"
+  },
   "license": "MIT"
 }
