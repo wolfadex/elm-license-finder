@@ -16,9 +16,7 @@ Object.entries(indirect).forEach(function([package, version]) {
   dependenciesToGet[package] = version;
 });
 
-let maxRuns = 10
-let runs = 0
-while (Object.keys(dependenciesToGet).length > 0 && runs < maxRuns) {
+while (Object.keys(dependenciesToGet).length > 0) {
 	const [ package, version ] = Object.entries(dependenciesToGet)[0];
 	const [ who, what ] = package.split("/");
 	const { license, dependencies, actualVersion } = getLicense(who, what, version);
@@ -32,7 +30,6 @@ while (Object.keys(dependenciesToGet).length > 0 && runs < maxRuns) {
 	    dependenciesToGet[pack] = ver;
 	  });
 	}
-	// runs++;
 }
 
 
