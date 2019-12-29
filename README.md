@@ -10,7 +10,7 @@ A simple node app for collecting license information for Elm dependencies. Gives
 
 \*_For packages, all dependencies are direct._
 
-![example picture](https://github.com/wolfadex/elm-license-finder/blob/master/example_pic.png)
+![example picture](https://raw.githubusercontent.com/wolfadex/elm-license-finder/master/example_pic.png)
 
 ---
 
