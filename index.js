@@ -75,7 +75,7 @@ function versionToParts(version) {
   return [parseInt(maj, 10), parseInt(min, 10), parseInt(pat, 10)];
 }
 
-function buildDependencyTree() {
+function buildDependencyTree(directory) {
   let elmHome = process.env.ELM_HOME;
 
   if (elmHome == null) {
@@ -92,7 +92,9 @@ function buildDependencyTree() {
   }
   const dependencyDict = {};
   const initialElmJson = fs.readFileSync(
-    path.resolve(process.cwd(), "elm.json"),
+    directory == null
+      ? path.resolve(process.cwd(), "elm.json")
+      : path.resolve(directory, "elm.json"),
   );
   const { dependencies, type } = JSON.parse(initialElmJson);
 
