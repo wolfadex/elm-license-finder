@@ -14,7 +14,7 @@ A simple node app for collecting license information for Elm dependencies. Gives
 
 ---
 
-## Use as command:
+## Use as a command:
 
 - Run `yarn global add elm-license-finder` or `npm install -g elm-license-finder`
 - Navigate to the directory with your `elm.json`
@@ -46,11 +46,3 @@ const path = require("path");
 
 const dependencies = elmLicenseFinder(path.resolve("path", "to", "elm", "project"));
 ```
-
----
-
-Tested on:
-
-- Windows 10
-- OSX
-- Linux (Chrome OS)
