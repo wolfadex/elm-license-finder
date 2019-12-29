@@ -1,114 +1,195 @@
-#!/usr/bin/env node
-
 const fs = require("fs");
 const path = require("path");
 const os = require("os");
 
-const elmHome =
-  process.env.ELM_HOME || path.resolve(os.homedir(), ".elm/0.19.1/packages");
-const dependencyDict = {};
-const dependenciesToGet = {};
-const initialElmJson = fs.readFileSync(path.resolve(process.cwd(), "elm.json"));
-const { dependencies } = JSON.parse(initialElmJson);
-const { direct, indirect } = dependencies;
+const versionRegex = /^\d+\.\d+\.\d+$/;
 
-Object.entries(direct).forEach(function([package, version]) {
-  dependenciesToGet[package] = version;
-});
-Object.entries(indirect).forEach(function([package, version]) {
-  dependenciesToGet[package] = version;
-});
-
-while (Object.keys(dependenciesToGet).length > 0) {
-  const [package, version] = Object.entries(dependenciesToGet)[0];
-  const [who, what] = package.split("/");
-  const { license, dependencies, actualVersion } = getLicense(
-    who,
-    what,
-    version,
-  );
-
-  if (dependencyDict[`${package}/${actualVersion}`] == null) {
-    dependencyDict[`${package}/${actualVersion}`] = license;
-    delete dependenciesToGet[package];
-  } else {
-    Object;
-    Object.entries(dependencies).forEach(function([pack, ver]) {
-      dependenciesToGet[pack] = ver;
-    });
-  }
+function isVersion(maybeVersion) {
+	return versionRegex.test(maybeVersion);
 }
 
-function getLicense(who, what, version) {
-  let elmJson;
-  let actualVersion;
+function versionInRange(low, lowComp, mid, highComp, high) {
+	let fitsLow = false;
+	let fitsHigh = false;
 
-  if (isVersion(version)) {
-    // Exact version
-    elmJson = fs.readFileSync(
-      path.join(elmHome, who, what, version, "elm.json"),
-    );
-    actualVersion = version;
-  } else {
-    // Between 2 versions
-    const possibleVersions = fs.readdirSync(path.join(elmHome, who, what), {
-      withFileTypes: true,
-    });
-    const highestVersion = possibleVersions
-      .filter(function(fileOrDir) {
-        return fileOrDir.isDirectory && isVersion(fileOrDir.name);
-      })
-      .map(function(dir) {
-        return dir.name;
-      });
-    elmJson = fs.readFileSync(
-      path.join(elmHome, who, what, highestVersion, "elm.json"),
-    );
-    actualVersion = highestVersion;
-  }
+	if (lowComp === "<") {
+		fitsLow = versionLessThan(low, mid);
+	} else if (lowComp === "<=") {
+		fitsLow = versionLessThanEqual(low, mid);
+	}
 
-  const { license, dependencies } = JSON.parse(elmJson);
+	if (highComp === "<") {
+		fitsHigh = versionLessThan(mid, high);
+	} else if (highComp === "<=") {
+		fitsHigh = versionLessThanEqual(mid, high);
+	}
 
-  return { license, dependencies, actualVersion };
+	return fitsLow && fitsHigh;
 }
 
-function isVersion(str) {
-  return /^\d+\.\d+\.\d+$/.test(str);
+function versionLessThan(low, high) {
+	const [lowMaj, lowMin, lowPat] = versionToParts(low);
+	const [highMaj, highMin, highPat] = versionToParts(high);
+
+	if (lowMaj > highMaj) {
+		return false;
+	}
+
+	if (lowMaj === highMaj && lowMin > highMin) {
+		return false;
+	}
+
+	if (lowMaj === highMaj && lowMin === highMin && lowPat > highPat) {
+		return false;
+	}
+
+	if (lowMaj === highMaj && lowMin === highMin && lowPat === highPat) {
+		return false;
+	}
+
+	return true;
 }
 
-function highestVersion(possibleVersions) {
-  return possibleVersions
-    .map(function(version) {
-      return version.split(".");
-    })
-    .sort(function([majA, minA, patA], [majB, minB, patB]) {
-      if (majA > majB) {
-        return 1;
-      } else if (majA < majB) {
-        return -1;
-      } else if (minA > minB) {
-        return 1;
-      } else if (minA < minB) {
-        return -1;
-      } else if (patA > patB) {
-        return 1;
-      } else if (patA < patB) {
-        return -1;
-      } else {
-        return 0;
-      }
-    })[0];
+function versionLessThanEqual(low, high) {
+	const [lowMaj, lowMin, lowPat] = versionToParts(low);
+	const [highMaj, highMin, highPat] = versionToParts(high);
+
+	if (lowMaj > highMaj) {
+		return false;
+	}
+
+	if (lowMaj === highMaj && lowMin > highMin) {
+		return false;
+	}
+
+	if (lowMaj === highMaj && lowMin === highMin && lowPat > highPat) {
+		return false;
+	}
+
+	return true;
 }
 
-console.log("Dependencies:");
-Object.entries(dependencyDict).forEach(function([pack, license]) {
-  const [who, what, version] = pack.split("/");
-  const packageName = `${who}/${what}`;
-  let isDirect = false;
+function versionToParts(version) {
+	const [maj, min, pat] = version.split(".");
 
-  if (direct[packageName] === version) {
-    isDirect = true;
-  }
+	return [parseInt(maj, 10), parseInt(min, 10), parseInt(pat, 10)];
+}
 
-  console.log(isDirect ? "Direct" : "Indirect", packageName, version, license);
-});
+function buildDependencyTree() {
+	const elmHome =
+		process.env.ELM_HOME || path.resolve(os.homedir(), ".elm/0.19.1/packages");
+	const dependencyDict = {};
+	const dependenciesToGet = {};
+	const initialElmJson = fs.readFileSync(
+		path.resolve(process.cwd(), "elm.json"),
+	);
+	const { dependencies, type } = JSON.parse(initialElmJson);
+
+	if (type === "application") {
+		const { direct, indirect } = dependencies;
+
+		for (const [package, version] of Object.entries(direct)) {
+			const [who, what] = package.split("/");
+			const elmJson = fs.readFileSync(
+				path.join(elmHome, who, what, version, "elm.json"),
+			);
+			const { license } = JSON.parse(elmJson);
+
+			dependencyDict[package] = {
+				version,
+				license,
+				type: "direct",
+			};
+		}
+
+		for (const [package, version] of Object.entries(indirect)) {
+			const [who, what] = package.split("/");
+			const elmJson = fs.readFileSync(
+				path.join(elmHome, who, what, version, "elm.json"),
+			);
+			const { license } = JSON.parse(elmJson);
+
+			dependencyDict[package] = {
+				version,
+				license,
+				type: "indirect",
+			};
+		}
+	} else if (type === "package") {
+		for (const [package, version] of Object.entries(dependencies)) {
+			const [who, what] = package.split("/");
+			const [
+				lowVersion,
+				lowCompare,
+				v,
+				highCompare,
+				highVersion,
+			] = version.split(" ");
+			const foundPackages = fs.readdirSync(path.join(elmHome, who, what), {
+				withFileTypes: true,
+			});
+			const highestVersionFound = highestVersion(
+				foundPackages
+					.filter(function(fileOrDir) {
+						return (
+							fileOrDir.isDirectory &&
+							isVersion(fileOrDir.name) &&
+							versionInRange(
+								lowVersion,
+								lowCompare,
+								fileOrDir.name,
+								highCompare,
+								highVersion,
+							)
+						);
+					})
+					.map(function(dir) {
+						return dir.name;
+					}),
+			);
+			const elmJson = fs.readFileSync(
+				path.join(elmHome, who, what, highestVersionFound, "elm.json"),
+			);
+			const { license } = JSON.parse(elmJson);
+
+			dependencyDict[package] = {
+				version: highestVersionFound,
+				license,
+				type: "direct",
+			};
+		}
+	} else {
+		throw new Error(
+			`Unknown Elm project type of ${type}. Expected your elm.json to have either "type": "application" or "type": "package".`,
+		);
+	}
+
+	function highestVersion(possibleVersions) {
+		return possibleVersions
+			.map(function(version) {
+				return versionToParts(version);
+			})
+			.sort(function([majA, minA, patA], [majB, minB, patB]) {
+				if (majA > majB) {
+					return 1;
+				} else if (majA < majB) {
+					return -1;
+				} else if (minA > minB) {
+					return 1;
+				} else if (minA < minB) {
+					return -1;
+				} else if (patA > patB) {
+					return 1;
+				} else if (patA < patB) {
+					return -1;
+				} else {
+					return 0;
+				}
+			})[0]
+			.join(".");
+	}
+
+	return dependencyDict;
+}
+
+module.exports = buildDependencyTree;

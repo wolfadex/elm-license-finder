@@ -8,10 +8,13 @@
   "description": "Gathers all the licenses for your Elm dependencies",
   "main": "index.js",
   "bin": {
-    "elm-license-finder": "./index.js"
+    "elm-license-finder": "./elm-license-finder.js"
   },
   "license": "MIT",
   "devDependencies": {
     "prettier": "1.19.1"
+  },
+  "dependencies": {
+    "cli-table": "^0.3.1"
   }
 }
