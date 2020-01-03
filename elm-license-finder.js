@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const Table = require("cli-table");
-const elmLicenseFinder = require("../index.js");
+const elmLicenseFinder = require("./index.js");
 
 try {
   const dependencies = elmLicenseFinder();
