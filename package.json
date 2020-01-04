@@ -5,6 +5,7 @@
     "name": "Wofgang Schuster",
     "email": "wolfadex@gmail.com"
   },
+  "repository": "github:wolfadex/elm-license-finder",
   "description": "Gathers all the licenses for your Elm dependencies",
   "main": "index.js",
   "bin": {
