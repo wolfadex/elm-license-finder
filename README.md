@@ -46,3 +46,15 @@ const path = require("path");
 
 const dependencies = elmLicenseFinder(path.resolve("path", "to", "elm", "project"));
 ```
+
+## Using Python Script
+
+**Requires Python 3**
+
+Run `python3 -m pip install colorclass terminaltables semver`
+
+If you are running the python script from inside your `elm.json` directory:
+`python3 main.py`
+
+If you are running the python script from a different directory:
+`python3 main.py relative/path/to/elm/project`

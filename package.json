@@ -5,6 +5,7 @@
     "name": "Wofgang Schuster",
     "email": "wolfadex@gmail.com"
   },
+  "repository": "github:wolfadex/elm-license-finder",
   "description": "Gathers all the licenses for your Elm dependencies",
   "main": "index.js",
   "bin": {
@@ -15,6 +16,7 @@
     "prettier": "1.19.1"
   },
   "dependencies": {
-    "cli-table": "^0.3.1"
+    "cli-table": "^0.3.1",
+    "semver": "^7.1.1"
   }
 }

@@ -1,72 +1,24 @@
 const fs = require("fs");
 const path = require("path");
 const os = require("os");
+const semver = require("semver");
 
 const versionRegex = /^\d+\.\d+\.\d+$/;
-
-function isVersion(maybeVersion) {
-  return versionRegex.test(maybeVersion);
+const operator = {
+    '<': semver.lt,
+    '<=': semver.lte,
+    '>': semver.gt,
+    '>=': semver.gt
 }
 
 function versionInRange(low, lowComp, mid, highComp, high) {
-  let fitsLow = false;
-  let fitsHigh = false;
-
-  if (lowComp === "<") {
-    fitsLow = versionLessThan(low, mid);
-  } else if (lowComp === "<=") {
-    fitsLow = versionLessThanEqual(low, mid);
-  }
-
-  if (highComp === "<") {
-    fitsHigh = versionLessThan(mid, high);
-  } else if (highComp === "<=") {
-    fitsHigh = versionLessThanEqual(mid, high);
-  }
-
-  return fitsLow && fitsHigh;
+    const fitsLow = operator[lowComp](low, mid);
+    const fitsLow = operator[highComp](mid, high);
+    return fitsLow && fitsHigh;
 }
 
-function versionLessThan(low, high) {
-  const [lowMaj, lowMin, lowPat] = versionToParts(low);
-  const [highMaj, highMin, highPat] = versionToParts(high);
-
-  if (lowMaj > highMaj) {
-    return false;
-  }
-
-  if (lowMaj === highMaj && lowMin > highMin) {
-    return false;
-  }
-
-  if (lowMaj === highMaj && lowMin === highMin && lowPat > highPat) {
-    return false;
-  }
-
-  if (lowMaj === highMaj && lowMin === highMin && lowPat === highPat) {
-    return false;
-  }
-
-  return true;
-}
-
-function versionLessThanEqual(low, high) {
-  const [lowMaj, lowMin, lowPat] = versionToParts(low);
-  const [highMaj, highMin, highPat] = versionToParts(high);
-
-  if (lowMaj > highMaj) {
-    return false;
-  }
-
-  if (lowMaj === highMaj && lowMin > highMin) {
-    return false;
-  }
-
-  if (lowMaj === highMaj && lowMin === highMin && lowPat > highPat) {
-    return false;
-  }
-
-  return true;
+function isVersion(maybeVersion) {
+  return versionRegex.test(maybeVersion);
 }
 
 function versionToParts(version) {
