@@ -13,7 +13,7 @@ const operator = {
 
 function versionInRange(low, lowComp, mid, highComp, high) {
     const fitsLow = operator[lowComp](low, mid);
-    const fitsLow = operator[highComp](mid, high);
+    const fitsHigh = operator[highComp](mid, high);
     return fitsLow && fitsHigh;
 }
 

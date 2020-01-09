@@ -12,10 +12,14 @@ program
     "--output <format>",
     "Output the dependencies in the specified format. Supported formats: json",
   )
+  .option(
+    "--dir <path>",
+    "The path to the directory containing your elm.json",
+  )
   .parse(process.argv);
 
 try {
-  const dependencies = elmLicenseFinder();
+  const dependencies = elmLicenseFinder(program.opts().dir);
 
   if (program.opts().output === "json") {
     console.log(JSON.stringify(dependencies));
@@ -71,7 +75,7 @@ try {
       error.message.indexOf("/elm.json") > -1
     ) {
       console.log(
-        "Unable to locate the 'elm.json' in this directory. Make sure you're pointed at a directory with an Elm elm.json.",
+        "Unable to locate the 'elm.json' in this directory. Make sure you're pointed at a directory with an elm.json.",
       );
     } else if (error.message.startsWith("Unknown Elm project type")) {
       console.log(error.message);
