@@ -10,7 +10,11 @@ program
   .name(packageJson.name)
   .option(
     "--output <format>",
-    "Output the dependencies in the specified format. Supported formats: json",
+    `Output the dependencies in the specified format.
+                   Supported formats: json, csv
+                   Notes:
+                     - csv format escapes the license field with "".
+                     - csv format is 'name,version,"license",type'`,
   )
   .option(
     "--dir <path>",
@@ -19,10 +23,16 @@ program
   .parse(process.argv);
 
 try {
-  const dependencies = elmLicenseFinder(program.opts().dir);
+  const { output, dir } = program.opts();
+  const dependencies = elmLicenseFinder(dir);
 
-  if (program.opts().output === "json") {
+  if (output === "json") {
     console.log(JSON.stringify(dependencies));
+  } else if (output === "csv") {
+    const csv = Object.entries(dependencies).map(function([name, { version, license, type }]) {
+      return `${name},${version},"${license}",${type}`;
+    }).join("\n");
+    console.log(csv);
   } else {
     const Table = require("cli-table");
     const tableAll = new Table({
