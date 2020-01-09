@@ -20,6 +20,12 @@ A simple node app for collecting license information for Elm dependencies. Gives
 - Navigate to the directory with your `elm.json`
 - Run `elm-license-finder`
 
+#### Options
+- `--dir <path>` The path to the directory containing your elm.json, for when you aren't running it fromt the root of the project.
+- `--output <format>` To specify an output format that isn't the default table. Formats include:
+	- `json`
+	- `csv` formatted as `'name,version,"license",type'` with the license escaped.
+
 ## Use as a module:
 
 Run `yarn add elm-license-finder` or `npm install elm-license-finder`
