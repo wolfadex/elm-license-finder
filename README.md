@@ -24,7 +24,7 @@ A simple node app for collecting license information for Elm dependencies. Gives
 - `--dir <path>` The path to the directory containing your elm.json, for when you aren't running it fromt the root of the project.
 - `--output <format>` To specify an output format that isn't the default table. Formats include:
 	- `json`
-	- `csv` formatted as 'name,version,"license",type' with the license escaped.
+	- `csv` formatted as `'name,version,"license",type'` with the license escaped.
 
 ## Use as a module:
 
